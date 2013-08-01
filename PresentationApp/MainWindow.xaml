@@ -21,6 +21,7 @@
             <Image Name="DepthCamera" Width="640" Height="480" Margin="0, 30, 0, 0" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Top"/>
         </StackPanel>
 
-        <Ellipse x:Name="Player1" Fill="#FFF5D30E" HorizontalAlignment="Left" Visibility="Collapsed" Height="25" Stroke="Black" VerticalAlignment="Top" Width="25" Margin="240,159,0,0"/>
+        <Ellipse x:Name="Player1Marker" Fill="#FFF5D30E" HorizontalAlignment="Left" Visibility="Collapsed" Height="25" Stroke="Black" VerticalAlignment="Top" Width="25" Margin="240,159,0,0"/>
+        <Ellipse x:Name="Player2Marker" Fill="#FF12FDFC" HorizontalAlignment="Left" Visibility="Collapsed" Height="25" Stroke="Black" VerticalAlignment="Top" Width="25" Margin="240,159,0,0"/>
     </Grid>
 </Window>

@@ -68,7 +68,9 @@ namespace PresentationApp
         /// <summary>
         /// Moves the cursor around
         /// </summary>
-        private TranslateTransform transform;
+        private TranslateTransform player1transform, player2transform;
+
+        private int Player1, Player2;
 
         /// <summary>
         /// Enumerator for calibration corners
@@ -90,8 +92,16 @@ namespace PresentationApp
         public MainWindow()
         {
             InitializeComponent();
-            transform = new TranslateTransform();
-            Player1.RenderTransform = transform;
+            
+            //Player Moverment
+            player1transform = new TranslateTransform();
+            Player1Marker.RenderTransform = player1transform;
+            player2transform = new TranslateTransform();
+            Player2Marker.RenderTransform = player2transform;
+
+            Player1 = -1;
+            Player2 = -1;
+
             timer.Interval = TimeSpan.FromSeconds(1);
             timer.Tick += OnTimedEvent;
             KinectInit();
@@ -190,6 +200,9 @@ namespace PresentationApp
 
                 if (skeletons.Length != 0)
                 {
+                    bool player1playing = false;
+                    bool player2playing = false;
+                    int count = 0;
                     foreach (Skeleton skel in skeletons)
                     {
                         Joint rightelbow = skel.Joints[JointType.ElbowRight];
@@ -198,11 +211,12 @@ namespace PresentationApp
                         Point3D elbowXY = SkeletonPointToScreen(rightelbow.Position);
                         Point3D handXY = SkeletonPointToScreen(righthand.Position);
 
-                        current_line = null;
-                        if (handXY.X > 0 && handXY.Y > 0 && handXY.Z > 0 &&
-                            elbowXY.X > 0 && elbowXY.Y > 0 && elbowXY.Z > 0)
+                        
+                        if (skel.TrackingState == SkeletonTrackingState.Tracked && (Player1 == skel.TrackingId))
                         {
-                            Player1.Visibility = System.Windows.Visibility.Visible;
+                            current_line = null;
+                            Console.WriteLine("Player1 " + skel.TrackingId + ",  " + skel.TrackingState);
+                            Player1Marker.Visibility = System.Windows.Visibility.Visible;
 
                             current_line = new _3DLine(elbowXY, handXY);
                             //current_line.printCoords();
@@ -210,18 +224,50 @@ namespace PresentationApp
                             //current_line.drawPoints(dc);
                             projection_plane = new _3DPlane();
                             Point3D p_i = CalcIntersection(current_line, projection_plane);
-                            Console.WriteLine(p_i.X + " , " + p_i.Y + " , " + p_i.Z);
+                            //Console.WriteLine(p_i.X + " , " + p_i.Y + " , " + p_i.Z);
 
                             p_i = calcMarkPos(p_i);
-                            Console.WriteLine(p_i.X + " , " + p_i.Y + " , " + p_i.Z);
+                            //Console.WriteLine(p_i.X + " , " + p_i.Y + " , " + p_i.Z);
 
-                            transform.X = p_i.X;
-                            transform.Y = p_i.Y;
+                            player1transform.X = p_i.X;
+                            player1transform.Y = p_i.Y;
+                            player1playing = true;
+                            Player1 = skel.TrackingId;
+                        }
+                        else if (skel.TrackingState == SkeletonTrackingState.Tracked && (Player2 == skel.TrackingId))
+                        {
+                            current_line = null;
+                            Console.WriteLine("Player2 " + skel.TrackingId + ",  " + skel.TrackingState);
+                            Player2Marker.Visibility = System.Windows.Visibility.Visible;
+
+                            current_line = new _3DLine(elbowXY, handXY);
+                            //current_line.printCoords();
+
+                            //current_line.drawPoints(dc);
+                            projection_plane = new _3DPlane();
+                            Point3D p_i = CalcIntersection(current_line, projection_plane);
+                            //Console.WriteLine(p_i.X + " , " + p_i.Y + " , " + p_i.Z);
+
+                            p_i = calcMarkPos(p_i);
+                            //Console.WriteLine(p_i.X + " , " + p_i.Y + " , " + p_i.Z);
+
+                            player2transform.X = p_i.X;
+                            player2transform.Y = p_i.Y;
+                            player2playing = true;
+                            Player2 = skel.TrackingId;
                             break;
                         }
+                        else if(skel.TrackingState == SkeletonTrackingState.Tracked)
+                        {
+                            if (!player1playing)
+                                Player1 = skel.TrackingId;
 
-                        
-                    }
+                            if (!player2playing)
+                                Player2 = skel.TrackingId;
+                        }
+
+                        ++count;
+                    }// End foreach (Skeleton skel in skeletons)
                 }
 
             }
@@ -499,12 +545,20 @@ namespace PresentationApp
 
         private void Lower_Elevation_Button_Click(object sender, RoutedEventArgs e)
         {
-            this.sensor.ElevationAngle -= 3;
+            try
+            {
+                this.sensor.ElevationAngle -= 3;
+            }
+            catch { };
         }
 
         private void Raise_Elevation_Button_Click(object sender, RoutedEventArgs e)
         {
-            this.sensor.ElevationAngle += 3;
+            try
+            {
+                this.sensor.ElevationAngle += 3;
+            }
+            catch { };
         }
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
